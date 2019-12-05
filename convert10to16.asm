@@ -26,11 +26,10 @@ section .data
     infoHEXlen equ $-infoHEX
     ; consts
     NewLine db 0x0A                 ; I still need to figure out why this works & %def doesnt
-    uint_invalid db "4294967295"    ; its a string (strlen=10)
 
 section .bss
     bufferHEX resb 10
-    bufferDEC resb 255              ; max buf of 255 for input (if crazy enough)
+    bufferDEC resb 10              ; max buf of 255 for input (if crazy enough)
 
 section .text
     global _start
@@ -54,15 +53,11 @@ _start:
     call convertToInteger       ; convert to int -> stores result in r10 as updated value
     call _printNUMBER
 
-    ;; sanity check if its not UINT_MAX before running conversion
-    ;; by checking if the strings match & if the carry flag is set!
-    ;; ref CMPSB: https://www.aldeid.com/wiki/X86-assembly/Instructions/cmpsb
-    ;; ref LEA: https://www.aldeid.com/wiki/X86-assembly/Instructions/lea
-    lea rsi, [uint_invalid] ; load str1
-    lea rdi, [bufferDEC]    ; load str2
-    mov rcx, 10             ; set check size
-    rep cmpsb               ; compare until rcx's count
-    jc _endNOW2             ; error if above uint_max
+    ;; check if we break uint_max
+    mov rcx, 0xFFFFFFFF         ; store UINT_MAX
+    cmp r10, rcx                ; compare input to it
+    ja _endNOW2                 ; exit if above
+
 
     ;; null out required registers before conversion
     xor rax, rax
@@ -71,7 +66,6 @@ _start:
 
     jmp convertToHEXLoop
 
-    ;jmp convertToHEXLoop       ; r10 will no longer hold our result.
 
 _bufferprep:    ; add "0x" to the front & set 0-counter to 0
     mov byte[bufferHEX+r8], 0x30     ; add 0 to front
@@ -297,7 +291,7 @@ _printNUMBER:
     mov rax, SYS_WRITE
     mov rdi, STDOUT
     mov rsi, bufferDEC
-    mov rdx, 255
+    mov rdx, 10
     syscall
     
     mov rax, SYS_WRITE
