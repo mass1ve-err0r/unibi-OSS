@@ -1,0 +1,19 @@
+#!/bin/bash
+# Auto-Build x86_64 with debug symbol table (NASM)
+# Saadat M. Baig (me@saadat.dev) | 11.10.2019
+
+if [ -z "$1" ]
+  then
+    echo "No argument (ASM filename) supplied!"
+    echo "Usage: asm64 <Assembly file name>"
+    echo "Example: asm64 schraeg"
+    exit
+fi
+echo Building $1.asm
+nasm -f elf64 -F dwarf -g $1.asm
+ld -static -o $1 $1.o
+rm $1.o
+if [ $? -eq 0 ];
+    then
+    echo Done building \& linking $1, launch with ./$1
+fi
