@@ -1,0 +1,19 @@
+#!/bin/bash
+# Auto-Build AArch64 with debug symbol table.
+# Saadat M. Baig (me@saadat.dev) | 20.02.2021
+
+if [ -z "$1" ]
+  then
+    echo "No argument (Assembly filename) supplied!"
+    echo "Usage: asm64 <Assembly filename without extension>"
+    echo "Example: asm64 schraeg"
+    exit
+fi
+echo Building $1.s
+as -g $1.s
+ld -static -o $1 a.out
+rm a.out
+if [ $? -eq 0 ];
+    then
+    echo Done building \& linking $1, launch with ./$1
+fi
